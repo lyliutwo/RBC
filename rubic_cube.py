@@ -6,12 +6,14 @@
 # 颜色编号：绿：0 红：1 白：2 橙：3 黄：4 蓝：5
 # 魔方方向设定： U：绿 F：红
 
+opt_list = ["R", "L", "U", "D", "F", "B"]
+
 import numpy as np
 
 
 class edge:
 
-    def __init__(self, id):
+    def __init__(self, id, position=-1, orientation=1):
         '''
             一个棱块有：
                 两个色块
@@ -20,8 +22,11 @@ class edge:
         '''
         self.id = id
         self.color = self.paint()
-        self.position = self.id
-        self.orientation = 1
+        if position == -1:
+            self.position = self.id
+        else:
+            self.position = position
+        self.orientation = orientation
 
     def paint(self):
         color_list = [[0, 2], [0, 1], [0, 4], [0, 3], [5, 2], [5, 1], [5, 4], [5, 3],
@@ -34,11 +39,14 @@ class edge:
 
 
 class corner:
-    def __init__(self, id):
+    def __init__(self, id, position=-1, orientation=0):
         self.id = id
         self.color = self.paint()
-        self.position = self.id
-        self.orientation = 0
+        if position == -1:
+            self.position = self.id
+        else:
+            self.position = position
+        self.orientation = orientation
 
     def paint(self):
         color_list = [[0, 1, 2], [0, 3, 2], [0, 3, 4], [0, 1, 4],
@@ -91,7 +99,7 @@ class face:
 
 class rubik_cube:
 
-    def __init__(self, id):
+    def __init__(self, id, random=False, random_step=0):
 
         self.id = id  # 魔方编号，姑且弄一个虽然不知道有什么用
         self.corners = list()
@@ -107,6 +115,78 @@ class rubik_cube:
         self.corner_condition = np.array([0, 1, 2, 3, 4, 5, 6, 7], dtype=int)
         self.edge_condition = np.array([0, 1, 2, 3, 4, 5,
                                6, 7, 8, 9, 10, 11], dtype=int)
+        self.opt_log = list() # ["R3", "L2",...]
+        self.random_step = random_step
+        if random:
+            self.upset(self.random_step)
+
+
+    def copy_corner(self, corner_list):
+        self.corners = corner_list
+
+    def copy_edge(self, edge_list):
+        self.edges = edge_list
+
+    def remote(self, opt, stride=1):
+        if opt == "R":
+            if stride % 4 == 0:
+                pass
+            elif stride % 4 == 1:
+                self.opt_R_1()
+            elif stride % 4 == 2:
+                self.opt_R_2()
+            else:
+                self.opt_R_3()
+
+        if opt == "L":
+            if stride % 4 == 0:
+                pass
+            elif stride % 4 == 1:
+                self.opt_L_1()
+            elif stride % 4 == 2:
+                self.opt_L_2()
+            else:
+                self.opt_L_3()
+
+        if opt == "U":
+            if stride % 4 == 0:
+                pass
+            elif stride % 4 == 1:
+                self.opt_U_1()
+            elif stride % 4 == 2:
+                self.opt_U_2()
+            else:
+                self.opt_U_3()
+
+        if opt == "D":
+            if stride % 4 == 0:
+                pass
+            elif stride % 4 == 1:
+                self.opt_D_1()
+            elif stride % 4 == 2:
+                self.opt_D_2()
+            else:
+                self.opt_D_3()
+
+        if opt == "F":
+            if stride % 4 == 0:
+                pass
+            elif stride % 4 == 1:
+                self.opt_F_1()
+            elif stride % 4 == 2:
+                self.opt_F_2()
+            else:
+                self.opt_F_3()
+
+        if opt == "B":
+            if stride % 4 == 0:
+                pass
+            elif stride % 4 == 1:
+                self.opt_B_1()
+            elif stride % 4 == 2:
+                self.opt_B_2()
+            else:
+                self.opt_B_3()
 
 
     def opt_U_1(self):
@@ -312,7 +392,6 @@ class rubik_cube:
         self.edges[edge_id[1]].position = 3
         self.edges[edge_id[2]].position = 8
         self.edges[edge_id[3]].position = 7
-
 
     def opt_F_3(self):
 
@@ -584,74 +663,73 @@ class rubik_cube:
         self.edges[edge_id[2]].position = 11
         self.edges[edge_id[3]].position = 6
 
+    def upset(self, step, print_root=True):
+        for _ in range(step):
+            opt_id = np.random.randint(18)
+            opt = opt_list[opt_id % 6]
+            stride = opt_id // 3 + 1
+            self.remote(opt, stride)
+            self.opt_log.append((opt, stride))
+
+        if print_root:
+            for opt, stride in self.opt_log:
+                print("{0}{1}".format(opt, stride), end="  ")
+            print(" ")
+
+
+
+
 
 def U1(r):
     r.opt_U_1()
 
-
 def U2(r):
     r.opt_U_2()
-
 
 def U3(r):
     r.opt_U_3()
 
-
 def D1(r):
     r.opt_D_1()
-
 
 def D2(r):
     r.opt_D_2()
 
-
 def D3(r):
     r.opt_D_3()
-
 
 def F1(r):
     r.opt_F_1()
 
-
 def F2(r):
     r.opt_F_2()
-
 
 def F3(r):
     r.opt_F_3()
 
-
 def B1(r):
     r.opt_B_1()
-
 
 def B2(r):
     r.opt_B_2()
 
-
 def B3(r):
     r.opt_B_3()
-
 
 def L1(r):
     r.opt_L_1()
 
-
 def L2(r):
     r.opt_L_2()
-
 
 def L3(r):
     r.opt_L_3()
 
-
 def R1(r):
     r.opt_R_1()
 
-
 def R2(r):
     r.opt_R_2()
-
 
 def R3(r):
     r.opt_R_3()
