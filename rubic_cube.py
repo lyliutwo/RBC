@@ -5,7 +5,7 @@
 '''
 # 颜色编号：绿：0 红：1 白：2 橙：3 黄：4 蓝：5
 # 魔方方向设定： U：绿 F：红
-
+color_list = ["G", "R", "W", "O", "Y", "B"]
 opt_list = ["R", "L", "U", "D", "F", "B"]
 
 import numpy as np
@@ -29,16 +29,39 @@ class edge:
         self.orientation = orientation
 
     def paint(self):
-        color_list = [[0, 2], [0, 1], [0, 4], [0, 3], [5, 2], [5, 1], [5, 4], [5, 3],
-                      [1, 2], [1, 4], [3, 4], [3, 2]]
+        color_list = [[0, 2], [0, 3], [0, 4], [0, 1], [5, 2], [5, 3], [5, 4], [5, 1],
+                      [1, 2], [3, 2], [3, 4], [1, 4]]
         return color_list[self.id]
 
     def change_orien(self):
         self.orientation = -self.orientation
         return self.orientation
 
+    def show_color_face(self, face):
+        if self.position in [1, 3, 5, 7]:
+            if self.orientation == 1:
+                color_order = [0, 1, -1]
+            else:
+                color_order = [1, 0, -1]
+        elif self.position in [0, 2, 4, 6]:
+            if self.orientation == 1:
+                color_order = [0, -1, 1]
+            else:
+                color_order = [1, -1, 0]
+        elif self.position in [8, 9, 10, 11]:
+            if self.orientation == 1:
+                color_order = [-1, 0, 1]
+            else:
+                color_order = [-1, 1, 0]
+
+        if color_order[face] == -1:
+            raise Exception("The edge don't in this face!", face)
+        else:
+            return color_list[self.color[color_order[face]]]
+
 
 class corner:
+
     def __init__(self, id, position=-1, orientation=0):
         self.id = id
         self.color = self.paint()
@@ -49,9 +72,9 @@ class corner:
         self.orientation = orientation
 
     def paint(self):
-        color_list = [[0, 1, 2], [0, 3, 2], [0, 3, 4], [0, 1, 4],
+        corner_color_list = [[0, 1, 2], [0, 3, 2], [0, 3, 4], [0, 1, 4],
                        [5, 1, 2], [5, 3, 2], [5, 3, 4], [5, 1, 4]]
-        return color_list[self.id]
+        return corner_color_list[self.id]
 
     def change_orien(self, opt=0):
         if opt == 0:
@@ -89,6 +112,31 @@ class corner:
 
         return self.orientation
 
+    def show_color_face(self, face):   # face: 0-U,D 1-F,B 2-R,L
+        a_group = [0, 2, 5, 7]
+        b_group = [1, 3, 4, 6]
+        if (self.id in a_group and self.position in a_group) or \
+                (self.id in b_group and self.position in b_group):
+            if self.orientation == 0:
+                color_order = [0, 1, 2]
+            elif self.orientation == 1:
+                color_order = [1, 2, 0]
+            elif self.orientation == -1:
+                color_order = [2, 0, 1]
+        else:
+            if self.orientation == 0:
+                color_order = [0, 2, 1]
+            elif self.orientation == 1:
+                color_order = [1, 0, 2]
+            elif self.orientation == -1:
+                color_order = [2, 1, 0]
+
+        return color_list[self.color[color_order[face]]]
+
+
+
+
+
 
 class face:
     def __init__(self, id):
@@ -115,7 +163,7 @@ class rubik_cube:
         self.corner_condition = np.array([0, 1, 2, 3, 4, 5, 6, 7], dtype=int)
         self.edge_condition = np.array([0, 1, 2, 3, 4, 5,
                                6, 7, 8, 9, 10, 11], dtype=int)
-        self.opt_log = list() # ["R3", "L2",...]
+        self.opt_log = list()  # ["R3", "L2",...]
         self.random_step = random_step
         if random:
             self.upset(self.random_step)
@@ -187,6 +235,106 @@ class rubik_cube:
                 self.opt_B_2()
             else:
                 self.opt_B_3()
+
+    def visualize(self):
+        face_U = [[2, 1, 3, 0], [1, 2, 0, 3], 0]  # [ids of corners, ids of edges, id of center]
+        face_F = [[3, 0, 7, 4], [3, 11, 8, 7], 1]
+        face_R = [[0, 1, 4, 5], [0, 8, 9, 4], 2]
+        face_B = [[1, 2, 5, 6], [1, 9, 10, 5], 3]
+        face_L = [[2, 3, 6, 7], [2, 10, 11, 6], 4]
+        face_D = [[7, 4, 6, 5], [7, 6, 4, 5], 5]
+
+        face_color_U = ["G", "G", "G", "G", "G", "G", "G", "G", "G"]
+        face_color_U[0] = self.corners[self.corner_condition[2]].show_color_face(0)
+        face_color_U[1] = self.edges[self.edge_condition[1]].show_color_face(0)
+        face_color_U[2] = self.corners[self.corner_condition[1]].show_color_face(0)
+        face_color_U[3] = self.edges[self.edge_condition[2]].show_color_face(0)
+        face_color_U[5] = self.edges[self.edge_condition[0]].show_color_face(0)
+        face_color_U[6] = self.corners[self.corner_condition[3]].show_color_face(0)
+        face_color_U[7] = self.edges[self.edge_condition[3]].show_color_face(0)
+        face_color_U[8] = self.corners[self.corner_condition[0]].show_color_face(0)
+
+        face_color_F = ["R", "R", "R", "R", "R", "R", "R", "R", "R"]
+        face_color_F[0] = self.corners[self.corner_condition[3]].show_color_face(1)
+        face_color_F[1] = self.edges[self.edge_condition[3]].show_color_face(1)
+        face_color_F[2] = self.corners[self.corner_condition[0]].show_color_face(1)
+        face_color_F[3] = self.edges[self.edge_condition[11]].show_color_face(1)
+        face_color_F[5] = self.edges[self.edge_condition[8]].show_color_face(1)
+        face_color_F[6] = self.corners[self.corner_condition[7]].show_color_face(1)
+        face_color_F[7] = self.edges[self.edge_condition[7]].show_color_face(1)
+        face_color_F[8] = self.corners[self.corner_condition[4]].show_color_face(1)
+
+        face_color_R = ["W", "W", "W", "W", "W", "W", "W", "W", "W"]
+        face_color_R[0] = self.corners[self.corner_condition[0]].show_color_face(2)
+        face_color_R[1] = self.edges[self.edge_condition[0]].show_color_face(2)
+        face_color_R[2] = self.corners[self.corner_condition[1]].show_color_face(2)
+        face_color_R[3] = self.edges[self.edge_condition[8]].show_color_face(2)
+        face_color_R[5] = self.edges[self.edge_condition[9]].show_color_face(2)
+        face_color_R[6] = self.corners[self.corner_condition[4]].show_color_face(2)
+        face_color_R[7] = self.edges[self.edge_condition[4]].show_color_face(2)
+        face_color_R[8] = self.corners[self.corner_condition[5]].show_color_face(2)
+
+        face_color_B = ["O", "O", "O", "O", "O", "O", "O", "O", "O"]
+        face_color_B[0] = self.corners[self.corner_condition[1]].show_color_face(1)
+        face_color_B[1] = self.edges[self.edge_condition[1]].show_color_face(1)
+        face_color_B[2] = self.corners[self.corner_condition[2]].show_color_face(1)
+        face_color_B[3] = self.edges[self.edge_condition[9]].show_color_face(1)
+        face_color_B[5] = self.edges[self.edge_condition[10]].show_color_face(1)
+        face_color_B[6] = self.corners[self.corner_condition[5]].show_color_face(1)
+        face_color_B[7] = self.edges[self.edge_condition[5]].show_color_face(1)
+        face_color_B[8] = self.corners[self.corner_condition[6]].show_color_face(1)
+
+        face_color_L = ["Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y", "Y"]
+        face_color_L[0] = self.corners[self.corner_condition[2]].show_color_face(2)
+        face_color_L[1] = self.edges[self.edge_condition[2]].show_color_face(2)
+        face_color_L[2] = self.corners[self.corner_condition[3]].show_color_face(2)
+        face_color_L[3] = self.edges[self.edge_condition[10]].show_color_face(2)
+        face_color_L[5] = self.edges[self.edge_condition[11]].show_color_face(2)
+        face_color_L[6] = self.corners[self.corner_condition[6]].show_color_face(2)
+        face_color_L[7] = self.edges[self.edge_condition[6]].show_color_face(2)
+        face_color_L[8] = self.corners[self.corner_condition[7]].show_color_face(2)
+
+        face_color_D = ["B", "B", "B", "B", "B", "B", "B", "B", "B"]
+        face_color_D[0] = self.corners[self.corner_condition[7]].show_color_face(0)
+        face_color_D[1] = self.edges[self.edge_condition[7]].show_color_face(0)
+        face_color_D[2] = self.corners[self.corner_condition[4]].show_color_face(0)
+        face_color_D[3] = self.edges[self.edge_condition[6]].show_color_face(0)
+        face_color_D[5] = self.edges[self.edge_condition[4]].show_color_face(0)
+        face_color_D[6] = self.corners[self.corner_condition[6]].show_color_face(0)
+        face_color_D[7] = self.edges[self.edge_condition[5]].show_color_face(0)
+        face_color_D[8] = self.corners[self.corner_condition[5]].show_color_face(0)
+
+        scan1 = "        {0}{1}{2}".format(face_color_U[0], face_color_U[1], face_color_U[2])
+        scan2 = "        {0}{1}{2}".format(face_color_U[3], face_color_U[4], face_color_U[5])
+        scan3 = "        {0}{1}{2}".format(face_color_U[6], face_color_U[7], face_color_U[8])
+        scan4 = "{0}{1}{2} {3}{4}{5} {6}{7}{8} {9}{10}{11}"\
+                .format(face_color_L[0], face_color_L[1], face_color_L[2], \
+                        face_color_F[0], face_color_F[1], face_color_F[2], \
+                        face_color_R[0], face_color_R[1], face_color_R[2], \
+                        face_color_B[0], face_color_B[1], face_color_B[2])
+        scan5 = "{0}{1}{2} {3}{4}{5} {6}{7}{8} {9}{10}{11}" \
+            .format(face_color_L[3], face_color_L[4], face_color_L[5], \
+                    face_color_F[3], face_color_F[4], face_color_F[5], \
+                    face_color_R[3], face_color_R[4], face_color_R[5], \
+                    face_color_B[3], face_color_B[4], face_color_B[5])
+        scan6 = "{0}{1}{2} {3}{4}{5} {6}{7}{8} {9}{10}{11}" \
+            .format(face_color_L[6], face_color_L[7], face_color_L[8], \
+                    face_color_F[6], face_color_F[7], face_color_F[8], \
+                    face_color_R[6], face_color_R[7], face_color_R[8], \
+                    face_color_B[6], face_color_B[7], face_color_B[8])
+        scan7 = "        {0}{1}{2}".format(face_color_D[0], face_color_D[1], face_color_D[2])
+        scan8 = "        {0}{1}{2}".format(face_color_D[3], face_color_D[4], face_color_D[5])
+        scan9 = "        {0}{1}{2}".format(face_color_D[6], face_color_D[7], face_color_D[8])
+
+        print(scan1)
+        print(scan2)
+        print(scan3)
+        print(scan4)
+        print(scan5)
+        print(scan6)
+        print(scan7)
+        print(scan8)
+        print(scan9)
 
 
     def opt_U_1(self):
@@ -667,7 +815,7 @@ class rubik_cube:
         for _ in range(step):
             opt_id = np.random.randint(18)
             opt = opt_list[opt_id % 6]
-            stride = opt_id // 3 + 1
+            stride = opt_id // 6 + 1
             self.remote(opt, stride)
             self.opt_log.append((opt, stride))
 
