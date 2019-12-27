@@ -183,9 +183,9 @@ class rubik_cube:
         '''
         if opt_id not in range(18):
             raise Exception("Wrong operation with id of {}".format(opt_id))
-        self.remote(opt=opt_list[opt_id % 6], stride=opt_id // 6)
+        self.remote(opt=opt_list[opt_id % 6], stride=opt_id // 6, write_log=True)
 
-    def remote(self, opt, stride=1):
+    def remote(self, opt, stride=1, write_log=True):
         if opt == "R":
             if stride % 4 == 0:
                 pass
@@ -245,6 +245,9 @@ class rubik_cube:
                 self.opt_B_2()
             else:
                 self.opt_B_3()
+
+        if write_log:
+            self.opt_log.append([opt, stride])
 
     def vectorize(self):
         # 将魔方状态转化为20维向量，用于计算Q
@@ -362,7 +365,6 @@ class rubik_cube:
         print(scan7)
         print(scan8)
         print(scan9)
-
 
     def opt_U_1(self):
 
@@ -843,14 +845,26 @@ class rubik_cube:
             opt_id = np.random.randint(18)
             opt = opt_list[opt_id % 6]
             stride = opt_id // 6 + 1
-            self.remote(opt, stride)
-            self.opt_log.append((opt, stride))
+            self.remote(opt, stride, write_log=True)
 
         if print_root:
+            self.show_log(part="upset")
+
+    def show_log(self, part="all"):
+        if part == "all":
             for opt, stride in self.opt_log:
                 print("{0}{1}".format(opt, stride), end="  ")
             print(" ")
-
+        elif part == "upset" or "random":
+            for opt, stride in self.opt_log[:self.random_step]:
+                print("{0}{1}".format(opt, stride), end="  ")
+            print(" ")
+        elif part == "solve":
+            for opt, stride in self.opt_log[self.random_step:]:
+                print("{0}{1}".format(opt, stride), end="  ")
+            print(" ")
+        else:
+            raise Exception("part = 'all' or 'upset' or 'solve'.")
 
 
 
