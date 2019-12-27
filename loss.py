@@ -1,12 +1,86 @@
 import numpy as np
 
+import rubic_cube
 from rubic_cube import rubik_cube, corner, edge
 
-corner_distance = np.ones([24, 24]) * 10
-edge_distance = np.ones([24, 24]) * 10
+corner_distance = np.ones([8, 24]) * 2
+edge_distance = np.ones([12, 24]) * 2
 opt_list = ["R", "L", "U", "D", "F", "B"]
 
 
+def make_corner_distance():
+    for i in range(8):
+        corner_distance[i, i] = 0
+
+    adj = [[], [], [], [], [], [], [], []]
+    adj[0] = [[1, 0], [1, 1], [3, 0], [3, -1], [4, 1], [4, -1], \
+            [2, 0], [5, 0], [7, 0]]
+    adj[1] = [[2, 0], [2, -1], [0, 0], [0, 1], [5, 1], [5, -1], \
+            [3, 0], [6, 0], [4, 0]]
+    adj[2] = [[3, 0], [3, 1], [1, 0], [1, -1], [6, 1], [6, -1], \
+            [0, 0], [7, 0], [5, 0]]
+    adj[3] = [[0, 0], [0, -1], [2, 0], [2, 1], [7, 1], [7, -1], \
+            [1, 0], [4, 0], [6, 0]]
+    adj[4] = [[5, 0], [5, 1], [7, 0], [7, -1], [0, 1], [0, -1], \
+            [6, 0], [1, 0], [3, 0]]
+    adj[5] = [[6, 0], [6, -1], [4, 0], [4, 1], [1, 1], [1, -1], \
+            [7, 0], [2, 0], [0, 0]]
+    adj[6] = [[7, 0], [7, 1], [5, 0], [5, -1], [2, 1], [2, -1], \
+            [4, 0], [3, 0], [1, 0]]
+    adj[7] = [[4, 0], [4, -1], [6, 0], [6, 1], [3, 1], [3, -1], \
+            [5, 0], [0, 0], [2, 0]]
+
+    for i in range(8):
+        for p, o in adj[i]:
+            j = (p + o * 8) % 24
+            corner_distance[i, j] = 1
+
+
+def make_edge_distance():
+    for i in range(12):
+        edge_distance[i, i] = 0
+
+    adj = [[], [], [], [], [], [], [], [], [], [], [], []]
+    adj[0] = [[1, 0], [2, 0], [3, 0], [8, 0], [4, 0], [9, 0]]
+    adj[1] = [[2, 0], [3, 0], [0, 0], [9, 1], [5, 0], [10, 1]]
+    adj[2] = [[3, 0], [0, 0], [1, 0], [10, 0], [6, 0], [11, 0]]
+    adj[3] = [[0, 0], [1, 0], [2, 0], [11, 1], [7, 0], [8, 1]]
+    adj[4] = [[5, 0], [6, 0], [7, 0], [8, 0], [0, 0], [9, 0]]
+    adj[5] = [[6, 0], [7, 0], [4, 0], [9, 1], [1, 0], [10, 1]]
+    adj[6] = [[7, 0], [4, 0], [5, 0], [10, 0], [2, 0], [11, 0]]
+    adj[7] = [[4, 0], [5, 0], [6, 0], [11, 1], [3, 0], [8, 1]]
+    adj[8] = [[3, 1], [0, 0], [7, 1], [4, 0], [11, 0], [9, 0]]
+    adj[9] = [[0, 1], [1, 0], [4, 1], [5, 0], [8, 0], [10, 0]]
+    adj[10] = [[1, 1], [2, 0], [5, 1], [6, 0], [9, 0], [11, 0]]
+    adj[11] = [[2, 1], [3, 0], [6, 1], [7, 0], [10, 0], [8, 0]]
+
+    for i in range(12):
+        for p, o in adj[i]:
+            j = p + o * 12
+            edge_distance[i, j] = 1
+
+    dis = [[], [], [], [], [], [], [], [], [], [], [], []]
+    dis[0] = [[0, 1], [2, 1], [4, 1], [6, 1]]
+    dis[1] = [[1, 1], [3, 1], [5, 1], [7, 1]]
+    dis[2] = [[0, 1], [2, 1], [4, 1], [6, 1]]
+    dis[3] = [[1, 1], [3, 1], [5, 1], [7, 1]]
+    dis[4] = [[0, 1], [2, 1], [4, 1], [6, 1]]
+    dis[5] = [[1, 1], [3, 1], [5, 1], [7, 1]]
+    dis[6] = [[0, 1], [2, 1], [4, 1], [6, 1]]
+    dis[7] = [[1, 1], [3, 1], [5, 1], [7, 1]]
+    dis[8] = [[8, 1], [9, 1], [10, 1], [11, 1]]
+    dis[9] = [[8, 1], [9, 1], [10, 1], [11, 1]]
+    dis[10] = [[8, 1], [9, 1], [10, 1], [11, 1]]
+    dis[11] = [[8, 1], [9, 1], [10, 1], [11, 1]]
+
+    for i in range(12):
+        for p, o in dis[i]:
+            j = p + o * 12
+            edge_distance[i, j] = 3
+
+
+
+'''
 def make_corner_distance():
     corner_list = list()
     for id in range(24):
@@ -17,11 +91,12 @@ def make_corner_distance():
             orientation = 1
         else:
             orientation = -1
-        corner = corner(id=position, orientation=orientation)
-        corner_list.append(corner)
+
+        Corner = rubic_cube.corner(id=position, orientation=orientation)
+        corner_list.append(Corner)
 
     # 0
-    for i in range(24):
+    for i in range(8):
         corner_distance[i, i] = 0
 
     # 1
@@ -48,8 +123,8 @@ def make_corner_distance():
                     dest = corner.position + 8
                 elif corner.orientation == -1:
                     dest = corner.position + 16
-
-                corner_distance[init, dest] = 1
+                if corner_distance[init, dest] > 1:
+                    corner_distance[init, dest] = 1
 
             c_1.remote(opt=opt, stride=stride)
             for corner in c_1.corners:
@@ -60,8 +135,8 @@ def make_corner_distance():
                     dest = corner.position + 8
                 elif corner.orientation == -1:
                     dest = corner.position + 16
-
-                corner_distance[init, dest] = 1
+                if corner_distance[init, dest] > 1:
+                    corner_distance[init, dest] = 1
 
             c_2.remote(opt=opt, stride=stride)
             for corner in c_2.corners:
@@ -72,8 +147,8 @@ def make_corner_distance():
                     dest = corner.position + 8
                 elif corner.orientation == -1:
                     dest = corner.position + 16
-
-                corner_distance[init, dest] = 1
+                if corner_distance[init, dest] > 1:
+                    corner_distance[init, dest] = 1
 
     # 2
     while 10 in corner_distance:
@@ -84,7 +159,9 @@ def make_corner_distance():
                     if new_distance < corner_distance[i, k]:
                         corner_distance[i, k] = new_distance
 
+'''
 
+'''
 def make_edge_distance():
     edge_list = list()
     for id in range(24):
@@ -94,7 +171,7 @@ def make_edge_distance():
         else:
             orientation = -1
 
-        e = edge(id=position, orientation=orientation)
+        e = rubic_cube.edge(id=position, orientation=orientation)
 
         edge_list.append(e)
 
@@ -121,7 +198,8 @@ def make_edge_distance():
                     dest = edge.position
                 else:
                     dest = edge.position + 12
-                edge_distance[init, dest] = 1
+                if edge_distance[init, dest] > 1:
+                    edge_distance[init, dest] = 1
 
             c_1.remote(opt=opt, stride=stride)
             for edge in c_1.edges:
@@ -130,7 +208,8 @@ def make_edge_distance():
                     dest = edge.position
                 else:
                     dest = edge.position + 12
-                edge_distance[init, dest] = 1
+                if edge_distance[init, dest] > 1:
+                    edge_distance[init, dest] = 1
 
     while 10 in edge_distance:
         for i in range(24):
@@ -139,6 +218,7 @@ def make_edge_distance():
                     new_distance = edge_distance[i, j] + edge_distance[j, k]
                     if new_distance < edge_distance[i, k]:
                         edge_distance[i, k] = new_distance
+'''
 
 
 def compute_corner_distance(corner_i, corner_j):
@@ -175,12 +255,18 @@ def compute_edge_distance(edge_i, edge_j):
 
 def compute_corner_loss(corner_i):
     origin = corner(id=corner_i.id)
-    return compute_corner_distance(corner_i, origin)
+    d = compute_corner_distance(origin, corner_i)
+    if d > 0:
+        print("corner{0} {1}".format(corner_i.id, d))
+    return d
 
 
 def compute_edge_loss(edge_j):
-    origin = edge(id=edge_j)
-    return compute_edge_distance(edge_j, origin)
+    origin = edge(id=edge_j.id)
+    d = compute_edge_distance(origin, edge_j)
+    if d > 0:
+        print("edge{0} {1}".format(edge_j.id, d))
+    return d
 
 
 def naive_loss(x):
