@@ -134,10 +134,6 @@ class corner:
         return color_list[self.color[color_order[face]]]
 
 
-
-
-
-
 class face:
     def __init__(self, id):
         self.id = id
@@ -167,7 +163,6 @@ class rubik_cube:
         self.random_step = random_step
         if random:
             self.upset(self.random_step)
-
 
     def copy_corner(self, corner_list):
         self.corners = corner_list
@@ -235,6 +230,23 @@ class rubik_cube:
                 self.opt_B_2()
             else:
                 self.opt_B_3()
+
+    def vectorize(self):
+        # 将魔方状态转化为20维向量，用于计算Q
+        v = np.zeros(20)
+        for i in range(8):
+            c = self.corners[i]
+            p = c.position
+            o = c.orientation
+            v[i] = p + o * 8
+
+        for j in range(12):
+            e = self.edges[j]
+            p = e.position
+            o = e.orientation
+            v[i + 8] = p + o * 12
+
+        return v
 
     def visualize(self):
         face_U = [[2, 1, 3, 0], [1, 2, 0, 3], 0]  # [ids of corners, ids of edges, id of center]

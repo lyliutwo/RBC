@@ -254,19 +254,27 @@ def compute_edge_distance(edge_i, edge_j):
 
 
 def compute_corner_reward(corner_i):
+    '''
+    通过cube计算块的reward，每个块随着距离增加奖励减半
+    :param corner_i:
+    :return:
+    '''
     origin = corner(id=corner_i.id)
     d = compute_corner_distance(origin, corner_i)
+    reward = 128.0 * (0.5 ** d)
+
     # if d > 0:
     #     print("corner{0} {1}".format(corner_i.id, d))
-    return d
+    return reward
 
 
 def compute_edge_reward(edge_j):
     origin = edge(id=edge_j.id)
     d = compute_edge_distance(origin, edge_j)
+    reward = 128.0 * (0.5 ** d)
     # if d > 0:
     #     print("edge{0} {1}".format(edge_j.id, d))
-    return d
+    return reward
 
 
 def naive_reward(x):
