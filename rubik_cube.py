@@ -170,6 +170,21 @@ class rubik_cube:
     def copy_edge(self, edge_list):
         self.edges = edge_list
 
+    def digit_remote(self, opt_id):
+        '''
+        R: 0, 6, 12
+        L: 1, 7, 13
+        U: 2, 8, 14
+        D: 3, 9, 15
+        F: 4, 10, 16
+        B: 5, 11, 17
+        :param opt_id:
+        :return:
+        '''
+        if opt_id not in range(18):
+            raise Exception("Wrong operation with id of {}".format(opt_id))
+        self.remote(opt=opt_list[opt_id % 6], stride=opt_id // 6)
+
     def remote(self, opt, stride=1):
         if opt == "R":
             if stride % 4 == 0:
