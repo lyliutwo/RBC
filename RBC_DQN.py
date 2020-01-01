@@ -1,14 +1,13 @@
 from rubik_cube import rubik_cube
 import numpy as np
-import time
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
 import torch.nn.functional as F
 import rewards
+from env import env
 
 # 超参数
-cube = rubik_cube(id=1, random=True, random_step=10)
 N_STATES = 20   # 角块与棱块的环境信息
 N_ACTIONS = 18     # 魔方的转动
 EPSILON = 0.6   # 贪婪度 greedy
@@ -38,8 +37,8 @@ class DQN(object):
 
         self.learn_step_counter = 0  # 用于 target 更新计时
         self.memory_counter = 0  # 记忆库记数
-        self.memory = np.zeros((MEMORY_CAPACITY, N_STATES * 2   ))  # 初始化记忆库
-        self.optimizer = torch.optim.Adam(self.eval_net.parameters(), lr=LR)  # torch 的优化器
+        self.memory = np.zeros((MEMORY_CAPACITY, N_STATES * 2 + 2))  # 初始化记忆库
+        self.optimizer = torch.optim.Adam(self.eval_net.parameters(), lr=ALPHA)  # torch 的优化器
         self.loss_func = nn.MSELoss()  # 误差公式
 
     def choose_action(self, x):
@@ -47,7 +46,8 @@ class DQN(object):
         # 这里只输入一个 sample
         if np.random.uniform() < EPSILON:  # 选最优动作
             actions_value = self.eval_net.forward(x)
-            action = torch.max(actions_value, 1)[1].data.numpy()[0, 0]  # return the argmax
+            # print(torch.max(actions_value, 1)[1].data.numpy())
+            action = torch.max(actions_value, 1)[1].data.numpy()[0]  # return the argmax
         else:  # 选随机动作
             action = np.random.randint(0, N_ACTIONS)
         return action
@@ -87,19 +87,17 @@ class DQN(object):
 
 
 dqn = DQN()  # 定义 DQN 系统
+env = env(upset_steps=3)
 
 for i_episode in range(400):
-    s = env.reset()
+    s = env.reset(upset_steps=3)
     while True:
 
-        # 选动作, 得到环境反馈
-        s_, r, done, info = env.step(a)
+        a = dqn.choose_action(s)
 
-        # 修改 reward, 使 DQN 快速学习
-        x, x_dot, theta, theta_dot = s_
-        r1 = (env.x_threshold - abs(x)) / env.x_threshold - 0.8
-        r2 = (env.theta_threshold_radians - abs(theta)) / env.theta_threshold_radians - 0.5
-        r = r1 + r2
+        # 选动作, 得到环境反馈
+        s_, r, done = env.step(a)
+
 
         # 存记忆
         dqn.store_transition(s, a, r, s_)
