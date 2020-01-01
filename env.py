@@ -28,3 +28,8 @@ class env:
 
         return self.state, self.reward, done
 
+    def reset(self, upset_steps):
+        self.cube = rubik_cube(id=self.cube.id+1, random=True, random_step=upset_steps)
+        self.state = self.cube.vectorize()
+        self.reward = rewards.naive_reward(self.cube)
+
