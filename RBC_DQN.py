@@ -1,15 +1,17 @@
-import rubik_cube
+from rubik_cube import rubik_cube
 import numpy as np
 import time
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
 import torch.nn.functional as F
+import rewards
 
 # 超参数
-N_STATES =    # 角块与棱块的环境信息
-N_ACTIONS =      # 魔方的转动
-EPSILON = 0.9   # 贪婪度 greedy
+cube = rubik_cube(id=1, random=True, random_step=10)
+N_STATES = 20   # 角块与棱块的环境信息
+N_ACTIONS = 18     # 魔方的转动
+EPSILON = 0.6   # 贪婪度 greedy
 ALPHA = 0.01     # 学习率
 GAMMA = 0.9    # 奖励递减值
 TARGET_REPLACE_ITER = 100    # Q 现实网络的更新频率
@@ -67,8 +69,8 @@ class DQN(object):
         sample_index = np.random.choice(MEMORY_CAPACITY, BATCH_SIZE)
         b_memory = self.memory[sample_index, :]
         b_s = Variable(torch.FloatTensor(b_memory[:, :N_STATES]))
-        b_a = Variable(torch.LongTensor(b_memory[:, N_STATES:N_STATES 1].astype(int)))
-        b_r = Variable(torch.FloatTensor(b_memory[:, N_STATES 1:N_STATES 2]))
+        b_a = Variable(torch.LongTensor(b_memory[:, N_STATES:N_STATES + 1].astype(int)))
+        b_r = Variable(torch.FloatTensor(b_memory[:, N_STATES + 1:N_STATES + 2]))
         b_s_ = Variable(torch.FloatTensor(b_memory[:, -N_STATES:]))
 
         # 针对做过的动作b_a, 来选 q_eval 的值, (q_eval 原本有所有动作的值)
@@ -97,7 +99,7 @@ for i_episode in range(400):
         x, x_dot, theta, theta_dot = s_
         r1 = (env.x_threshold - abs(x)) / env.x_threshold - 0.8
         r2 = (env.theta_threshold_radians - abs(theta)) / env.theta_threshold_radians - 0.5
-        r = r1  r2
+        r = r1 + r2
 
         # 存记忆
         dqn.store_transition(s, a, r, s_)
