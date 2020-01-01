@@ -183,7 +183,7 @@ class rubik_cube:
         '''
         if opt_id not in range(18):
             raise Exception("Wrong operation with id of {}".format(opt_id))
-        self.remote(opt=opt_list[opt_id % 6], stride=opt_id // 6, write_log=True)
+        self.remote(opt=opt_list[opt_id % 6], stride=opt_id // 6+1, write_log=True)
 
     def remote(self, opt, stride=1, write_log=True):
         if opt == "R":
@@ -848,6 +848,7 @@ class rubik_cube:
             self.remote(opt, stride, write_log=True)
 
         if print_root:
+            print("The cube is upset as follow:")
             self.show_log(part="upset")
 
     def show_log(self, part="all"):

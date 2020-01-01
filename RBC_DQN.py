@@ -5,7 +5,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 import torch.nn.functional as F
 import rewards
-from env import env
+from env import rubik_env
 
 # 超参数
 N_STATES = 20   # 角块与棱块的环境信息
@@ -87,7 +87,7 @@ class DQN(object):
 
 
 dqn = DQN()  # 定义 DQN 系统
-env = env(upset_steps=3)
+env = rubik_env(upset_steps=3)
 
 for i_episode in range(400):
     s = env.reset(upset_steps=3)

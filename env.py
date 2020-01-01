@@ -2,13 +2,15 @@ import numpy as np
 from rubik_cube import corner, edge, rubik_cube
 import rewards
 
-class env:
+class rubik_env:
     def __init__(self, upset_steps, batch_size=1):
         self.cube = rubik_cube(id=0, random=True, random_step=upset_steps)
         self.state = self.cube.vectorize()
         self.action_space = 18
         self.observation_space = 20
         self.reward = rewards.naive_reward(self.cube)
+
+        rewards.dist_init()
 
 
     def step(self, action):
@@ -23,7 +25,7 @@ class env:
 
         done = False
 
-        if self.reward >= 2560.0 or (len(self.cube.opt_log) - self.cube.random_step) > 100:
+        if self.reward >= 2560.0 or (len(self.cube.opt_log) - self.cube.random_step) > 50:
             done = True
 
         return self.state, self.reward, done

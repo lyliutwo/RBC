@@ -277,8 +277,14 @@ def compute_edge_reward(edge_j):
     return reward
 
 
+def dist_init():
+    edge_distance = make_edge_distance()
+    corner_distance = make_corner_distance()
+
+
 def naive_reward(x):
     reward = 0
+    # dist_init() #  每次都重新计算太浪费时间了
     for c in x.corners:
         reward += compute_corner_reward(c)
     for e in x.edges:
