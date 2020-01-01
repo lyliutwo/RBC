@@ -15,6 +15,7 @@ ALPHA = 0.01     # 学习率
 GAMMA = 0.9    # 奖励递减值
 TARGET_REPLACE_ITER = 100    # Q 现实网络的更新频率
 MEMORY_CAPACITY = 2000      # 记忆库大小
+BATCH_SIZE = 32
 
 class Net(nn.Module):
     def __init__(self, ):
