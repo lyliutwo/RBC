@@ -261,7 +261,7 @@ def compute_corner_reward(corner_i):
     '''
     origin = corner(id=corner_i.id)
     d = compute_corner_distance(origin, corner_i)
-    reward = 128.0 * (0.5 ** d)
+    reward = 1.0 * (0.5 ** d)
 
     # if d > 0:
     #     print("corner{0} {1}".format(corner_i.id, d))
@@ -271,7 +271,7 @@ def compute_corner_reward(corner_i):
 def compute_edge_reward(edge_j):
     origin = edge(id=edge_j.id)
     d = compute_edge_distance(origin, edge_j)
-    reward = 128.0 * (0.5 ** d)
+    reward = 1.0 * (0.5 ** d)
     # if d > 0:
     #     print("edge{0} {1}".format(edge_j.id, d))
     return reward
@@ -291,3 +291,19 @@ def naive_reward(x):
         reward += compute_edge_reward(e)
 
     return reward
+
+def unique_reward(x):
+    reward = 0
+    gamma = 1.0
+    step = len(x.opt_log) - x.random_step - 1
+
+    if x.is_solved():
+        reward = 20 * (gamma ** step)
+
+    return reward
+
+def reward(x):
+    l = 0.5
+    r = unique_reward(x) + l * naive_reward(x)
+
+    return r

@@ -162,7 +162,16 @@ class rubik_cube:
         self.opt_log = list()  # ["R3", "L2",...]
         self.random_step = random_step
         if random:
-            self.upset(self.random_step)
+            self.upset(self.random_step, print_root=False)
+
+    def is_solved(self):
+        for c in self.corners:
+            if not (c.id == c.position and c.orientation == 0):
+                return False
+        for e in self.edges:
+            if not(e.id == e.position and e.orientation == 1):
+                return False
+        return True
 
     def copy_corner(self, corner_list):
         self.corners = corner_list

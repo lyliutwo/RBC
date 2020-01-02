@@ -14,19 +14,31 @@ EPSILON = 0.6   # 贪婪度 greedy
 ALPHA = 0.01     # 学习率
 GAMMA = 0.9    # 奖励递减值
 TARGET_REPLACE_ITER = 100    # Q 现实网络的更新频率
-MEMORY_CAPACITY = 2000      # 记忆库大小
-BATCH_SIZE = 32
+MEMORY_CAPACITY = 25600      # 记忆库大小
+BATCH_SIZE = 256
+
+def reverse_action(a):
+    if a < 6:
+        return a + 12
+    elif a < 12:
+        return a
+    else:
+        return a - 12
 
 class Net(nn.Module):
     def __init__(self, ):
         super(Net, self).__init__()
-        self.fc1 = nn.Linear(N_STATES, 10)
+        self.fc1 = nn.Linear(N_STATES, 20)
         self.fc1.weight.data.normal_(0, 0.1)    # initialization
-        self.out = nn.Linear(10, N_ACTIONS)
+        self.fc2 = nn.Linear(20, 20)
+        self.fc2.weight.data.normal_(0, 0.1)
+        self.out = nn.Linear(20, N_ACTIONS)
         self.out.weight.data.normal_(0, 0.1)    # initialization
 
     def forward(self, x):
         x = self.fc1(x)
+        x = F.relu(x)
+        x = self.fc2(x)
         x = F.relu(x)
         actions_value = self.out(x)
         return actions_value
@@ -58,13 +70,13 @@ class DQN(object):
         # 如果记忆库满了, 就覆盖老数据
         index = self.memory_counter % MEMORY_CAPACITY
         self.memory[index, :] = transition
-        self.memory_counter = 1
+        self.memory_counter += 1
 
     def learn(self):
         # target net 参数更新
         if self.learn_step_counter % TARGET_REPLACE_ITER == 0:
             self.target_net.load_state_dict(self.eval_net.state_dict())
-        self.learn_step_counter = 1
+        self.learn_step_counter += 1
 
         # 抽取记忆库中的批数据
         sample_index = np.random.choice(MEMORY_CAPACITY, BATCH_SIZE)
@@ -80,13 +92,15 @@ class DQN(object):
         q_target = b_r
         GAMMA * q_next.max(1)[0]  # shape (batch, 1)
         loss = self.loss_func(q_eval, q_target)
+        if self.learn_step_counter % 1000 == 0:
+            print("loss: {0}".format(loss))
 
         # 计算, 更新 eval net
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
 
-
+'''
 dqn = DQN()  # 定义 DQN 系统
 env = rubik_env(upset_steps=3)
 
@@ -111,3 +125,4 @@ for i_episode in range(400):
 
         s = s_
 
+'''
